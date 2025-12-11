@@ -11,7 +11,7 @@ class Cart:
             cart = self.session['cart'] = {}
         self.cart = cart
 
-    
+
     def add(self, product, size, quantity=1, override_quantity=False):
         product_id = str(product.id)
         size_name = str(size)
@@ -33,11 +33,11 @@ class Cart:
 
         self.save()
 
-    
+
     def save(self):
         self.session.modified = True
 
-    
+
     def remove(self, product, size):
         product_id = str(product.id)
         size_name = str(size)
@@ -47,13 +47,13 @@ class Cart:
             del self.cart[cart_key]
             self.save()
 
-    
+
     def update_qunatity(self, product, size, quantity):
         if quantity <= 0:
-            self.remove(product, size) 
+            self.remove(product, size)
         else:
             self.add(product, size, quantity, override_quantity=True)
-    
+
 
     def __iter__(self):
         product_ids = [item['product_id'] for item in self.cart.values()]
@@ -71,19 +71,19 @@ class Cart:
     def __len__(self):
         lenght = sum(item['quantity'] for item in self.cart.values())
         return lenght
-    
+
 
     def get_total_price(self):
-        total = sum(Decimal(item['price']) * item['quantity'] 
+        total = sum(Decimal(item['price']) * item['quantity']
                     for item in  self.cart.values())
         return total
-    
+
 
     def clear(self):
         del self.session['cart']
         self.save()
 
-    
+
     def get_cart_items(self):
         items = []
         for item in self:

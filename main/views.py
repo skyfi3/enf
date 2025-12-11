@@ -13,11 +13,11 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
-        context['curent_category'] = None
+        context['current_category'] = None
         return context
     
 
-    def get(self,request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main/home_content.html', context)
@@ -28,10 +28,10 @@ class CatalogView(TemplateView):
     template = 'main/base.html'
 
     FILTER_MAPPING = {
-        'color': lambda queryset, value:queryset.filter(color__iexact=value),
-        'min_price': lambda queryset, value:queryset.filter(price_gte=value),
-        'max_price': lambda queryset, value:queryset.filter(price_lte=value),
-        'size': lambda queryset, value:queryset.filter(product_sizes__size__name=value),
+        'color': lambda queryset, value: queryset.filter(color__iexact=value),
+        'min_price': lambda queryset, value: queryset.filter(price_gte=value),
+        'max_price': lambda queryset, value: queryset.filter(price_lte=value),
+        'size': lambda queryset, value: queryset.filter(product_sizes__size__name=value),
     }
 
 
@@ -41,7 +41,7 @@ class CatalogView(TemplateView):
         categories = Category.objects.all()
         products = Product.objects.all().order_by('-created_at')
         current_category = None
-        
+
         if category_slug:
             current_category = get_object_or_404(Category, slug=category_slug)
             products = products.filter(category=current_category)
@@ -70,13 +70,13 @@ class CatalogView(TemplateView):
             'filter_params': filter_params,
             'sizes': Size.objects.all(),
             'search_query': query or ''
-        })  
+        })
 
         if self.request.GET.get('show_search') == 'true':
             context['show_search'] = True
         elif self.request.GET.get('reset_search') == 'true':
             context['reset_search'] = True
-
+        
         return context
     
 
@@ -89,14 +89,14 @@ class CatalogView(TemplateView):
                 return TemplateResponse(request, 'main/search_button.html', {})
             template = 'main/filter_modal.html' if request.GET.get('show_filters') == 'true' else 'main/catalog.html'
             return TemplateResponse(request, template, context)
-        return TemplateResponse(request, self.template_name, context)
+        return TemplateResponse(request, self.template, context)
     
 
 class ProductDetailView(DetailView):
     model = Product
     template_name = 'main/base.html'
     slug_field = 'slug'
-    sluf_url_kwarg = 'slug'
+    slug_url_kwarg = 'slug'
 
 
     def get_context_data(self, **kwargs):
@@ -106,14 +106,13 @@ class ProductDetailView(DetailView):
         context['related_products'] = Product.objects.filter(
             category=product.category
         ).exclude(id=product.id)[:4]
-        context['current_category'] = product.category.slug 
+        context['current_category'] = product.category.slug
         return context
-
-
     
+
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object()            
+        self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main/product_detail.html', context)
-        raise TemplateResponse(request, self.template_name, context)
+        return TemplateResponse(request, self.template_name, context)
